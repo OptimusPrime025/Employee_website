@@ -1,0 +1,114 @@
+<!-- templates/limits.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Set or Update Limits</title>
+  <!-- Link to your CSS file in static folder -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='limits.css') }}">
+</head>
+<body>
+
+  <!-- Back to Dashboard Button -->
+  <button class="back-btn" onclick="window.location.href='/'">Back to Dashboard</button>
+
+  <h1>Set/Update Limits for Each Role</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ROLE</th>
+        <th>MINIMUM HOURS</th>
+        <th>MAXIMUM HOURS</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in limit_rows %}
+      <tr>
+        <!-- row[0] => role, row[1] => min_hours, row[2] => max_hours -->
+        <td class="role-cell" data-role="{{ row[0] }}" data-min="{{ row[1] }}" data-max="{{ row[2] }}">
+          {{ row[0] }}
+        </td>
+        <td>{{ row[1] }}</td>
+        <td>{{ row[2] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Hidden popup/dialog box -->
+  <div id="limitDialog" class="dialog-overlay">
+    <div class="dialog-content">
+      <span class="close-dialog" id="closeDialog">&times;</span>
+      <h2 id="dialogTitle">Set or Update Limits</h2>
+
+      <form id="limitForm" onsubmit="return false;">
+        <label for="roleName">Role:</label>
+        <input type="text" id="roleName" name="roleName" readonly />
+
+        <label for="minHours">Set Minimum Hours:</label>
+        <input type="number" id="minHours" name="minHours" required />
+
+        <label for="maxHours">Set Maximum Hours:</label>
+        <input type="number" id="maxHours" name="maxHours" required />
+
+        <button type="button" onclick="submitLimits()">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Show dialog when clicking on a role cell
+    document.querySelectorAll('.role-cell').forEach(function(cell) {
+      cell.addEventListener('click', function() {
+        const role = cell.getAttribute('data-role');
+        const minVal = cell.getAttribute('data-min');
+        const maxVal = cell.getAttribute('data-max');
+
+        document.getElementById('roleName').value = role;
+        document.getElementById('minHours').value = minVal;
+        document.getElementById('maxHours').value = maxVal;
+
+        // Use 'flex' so the dialog is centered (see CSS .dialog-overlay)
+        document.getElementById('limitDialog').style.display = 'flex';
+      });
+    });
+
+    // Close dialog
+    document.getElementById('closeDialog').addEventListener('click', function() {
+      document.getElementById('limitDialog').style.display = 'none';
+    });
+
+    // Submit updated limits via fetch
+    function submitLimits() {
+      const role = document.getElementById('roleName').value;
+      const minHours = document.getElementById('minHours').value;
+      const maxHours = document.getElementById('maxHours').value;
+
+      fetch('/update_limits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          role: role,
+          min_hours: minHours,
+          max_hours: maxHours
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Reload to see updated values
+          window.location.reload();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      })
+      .catch(err => {
+        alert('Request failed: ' + err);
+      });
+    }
+  </script>
+</body>
+</html>
