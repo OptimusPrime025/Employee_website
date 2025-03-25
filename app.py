@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, jsonify
 import psycopg2
 from psycopg2 import sql
+import os
+
 
 app = Flask(__name__)
 
