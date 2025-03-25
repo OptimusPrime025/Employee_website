@@ -8,13 +8,9 @@ app = Flask(__name__)
 # SHARED DB CONNECTION
 # --------------------------------------------------------
 def get_db_connection():
-    return psycopg2.connect(
-        dbname="postgres",
-        user="postgres",
-        password="sql123",
-        host="localhost",
-        port="5432"
-    )
+    db_url = os.getenv("DATABASE_URL")
+    conn = psycopg2.connect(db_url)
+    return conn
 
 # --------------------------------------------------------
 # ADDED FROM tables.py
